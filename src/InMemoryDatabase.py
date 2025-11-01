@@ -4,15 +4,15 @@ class InMemoryDatabase(ABC):
     '''Interface for in-memory databases'''
     @staticmethod
     @abstractmethod
-    def open():
-        pass
-    
-    @abstractmethod
-    def load_dump(self, dump):
+    def open(script):
         pass
     
     @abstractmethod
     def execute(self, statement):
+        pass
+    
+    @abstractmethod
+    def execute_script(self, script):
         pass
     
     @abstractmethod
@@ -21,6 +21,10 @@ class InMemoryDatabase(ABC):
     
     @abstractmethod
     def rollback(self):
+        pass
+    
+    @abstractmethod
+    def backup(self, file):
         pass
 
     @abstractmethod
