@@ -1,28 +1,49 @@
-from InMemoryDatabase import InMemoryDatabase
+from EncryptedInMemDb import EncryptedInMemDb
+from Fernet import FernetCrypto
 import sqlite3
 
-class SqliteDatabase(InMemoryDatabase):
+class SqliteDatabase(EncryptedInMemDb):
     '''In-memory SQLite database'''
     
-    def __init__(self, connection, cursor):
+    # NOTE: Not doing work in ctor because that shall not be!
+    def __init__(self, connection, crypto):
         self.connection = connection
-        self.cursor = cursor
+        self.crypto = crypto
         
     @staticmethod
-    def open(script = None):
-        #NOTE: Not doing work in ctor because that shall not be!
-        con = sqlite3.connect(":memory:")
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        db = SqliteDatabase(con, cur)
+    def _get_connection():
+        connection = sqlite3.connect(":memory:")
+        connection.row_factory = sqlite3.Row
+        return connection
+        
+    @staticmethod
+    def from_script(script, master_pwd):
+        (crypto, salt) = FernetCrypto.from_pwd(master_pwd)
+        connection = SqliteDatabase._get_connection()
+        db = SqliteDatabase(connection, crypto)
         db.execute_script(script)
+        return (db, salt)
+    
+    @staticmethod
+    def from_backup(enc_backup, master_pwd, salt):
+        (crypto, _) = FernetCrypto.from_pwd(master_pwd, salt)
+        with open(enc_backup, 'rb') as f:
+            blob = f.read()
+            
+        if not (backup := crypto.decrypt(blob)):
+            return None
+            
+        backup = backup.decode("utf-8")
+        connection = SqliteDatabase._get_connection()
+        db = SqliteDatabase(connection, crypto)
+        db.execute_script(backup)
         return db
     
     def execute(self, statement):
-        self.cursor.execute(statement)
+        self.connection.cursor().execute(statement)
         
     def execute_script(self, script):
-        self.cursor.executescript(script) #Note: Automatically creates transactions
+        self.connection.cursor().executescript(script) #Note: Automatically creates transactions
         
     def commit(self):
         self.connection.commit()
@@ -30,11 +51,16 @@ class SqliteDatabase(InMemoryDatabase):
     def rollback(self):
         self.connection.rollback()
 
-    def backup(self):
+    def backup(self, backup_file):
         backup = ""
         for line in self.connection.iterdump():
             backup += '%s\n' % line
-        return backup
+            
+        bin_backup = backup.encode()
+        token = self.crypto.encrypt(bin_backup)
+    
+        with open(backup_file, 'wb') as f:
+            f.write(token)
 
     def close(self):
         self.connection.close()

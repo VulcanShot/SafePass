@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 
-class InMemoryDatabase(ABC):
-    '''Interface for in-memory databases'''
+class EncryptedInMemDb(ABC):
+    '''Interface for in-memory databases encrypted with Fernet'''
     @staticmethod
     @abstractmethod
-    def open(script):
+    def from_script(script, crypto):
         pass
     
     @abstractmethod
@@ -24,7 +24,7 @@ class InMemoryDatabase(ABC):
         pass
     
     @abstractmethod
-    def backup(self, file):
+    def backup(self, file, crypto):
         pass
 
     @abstractmethod
