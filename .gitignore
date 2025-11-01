@@ -1,5 +1,10 @@
-./venv
+# Python
+venv/
 __pycache__/
 
+# Project
+src/db
+
+# Misc
 .gitconfig
 design.md
