@@ -70,9 +70,8 @@ def get_salt():
 def offer_new_database():
     yes = ['y', 'yes']
     choice = input('Do you want to create an empty database? [Y/N] ').lower()
-    if choice not in yes:
-        exit(0)
-    new_database()
+    if choice in yes:
+        new_database()
         
 def main_loop(db):
     print('Please select the action you want to take:')
@@ -94,11 +93,13 @@ if __name__ == '__main__':
         if not salt:
             LOGGER.error(f'The salt file ({SALT_FILE}) has not been found. Please restore it or create a new database.')
             offer_new_database()
+            exit(2) # NOTE: Actual Windows exit code for file not found
             
         while True:
             master_pwd = getpass('Please enter your master password (leave empty to create new database): ')
             if len(master_pwd) == 0:
                 offer_new_database()
+                exit(1)
             db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, master_pwd, salt)
             if db:
                 break
