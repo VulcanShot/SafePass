@@ -12,6 +12,7 @@ class FernetCrypto(SymmetricCrypto):
         #NOTE: Explain why key derivation
         # Reference: https://cryptography.io/en/latest/fernet/#using-passwords-with-fernet
         
+        is_salt_new = False
         if salt is None:
             salt = os.urandom(16)
             is_salt_new = True
@@ -28,14 +29,19 @@ class FernetCrypto(SymmetricCrypto):
         fernet = Fernet(encoded_key)
         return FernetCrypto(fernet) if not is_salt_new else (FernetCrypto(fernet), salt)
     
-    def encrypt(self, blob):
-        return self.key.encrypt(blob)
+    def encrypt(self, input):
+        if isinstance(input, str):
+            input = input.encode()
+        elif not isinstance(input, bytes):
+            raise ValueError
+        return self.key.encrypt(input)
     
-    def decrypt(self, token):
+    def decrypt_to_str(self, token):
         '''
         Returns the decrypted plaintext, or None if there was an problem with the token.
         '''
         try:
-            return self.key.decrypt(token)
+            blob = self.key.decrypt(token)
+            return blob.decode()
         except InvalidToken:
             return None

@@ -16,14 +16,6 @@ class EncryptedInMemDb(ABC):
         pass
     
     @abstractmethod
-    def commit(self):
-        pass
-    
-    @abstractmethod
-    def rollback(self):
-        pass
-    
-    @abstractmethod
     def backup(self, file, crypto):
         pass
 

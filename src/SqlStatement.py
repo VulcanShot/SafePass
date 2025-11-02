@@ -1,5 +1,4 @@
-class SqlStatement():
-    CREATE_TABLES = """
+CREATE_TABLES = """\
 CREATE TABLE IF NOT EXISTS Service (
     ServiceId int,
     Name text unique not null,

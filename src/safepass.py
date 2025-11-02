@@ -4,7 +4,7 @@ from getpass import getpass
 import mmap
 
 from SqliteDatabase import SqliteDatabase
-from SqlStatement import SqlStatement
+import SqlStatement
 
 ENCRYPTED_DB_FILE = os.path.join('db', 'safepass.db.enc')
 SALT_FILE = os.path.join('db', 'salt.bin')
@@ -34,8 +34,8 @@ def new_database():
     main_loop(db)
 
 def get_new_master_password():
-    #NOTE: NIST https://pages.nist.gov/800-63-4/sp800-63b/passwords/
-    # Can't apply rate limiting
+    #NOTE: https://pages.nist.gov/800-63-4/sp800-63b/passwords/
+    # Can't apply rate limiting because its a binary (easily bypassable)
     
     while True:
         master_pwd = getpass('Please create a master password: ') # NOTE: Getpass instead of input
@@ -60,12 +60,6 @@ def get_new_master_password():
 def write_salt(salt: bytes):
     with open(SALT_FILE, 'wb') as f:
         return f.write(salt)
-    
-def get_salt():
-    if os.path.exists(SALT_FILE):
-        with open(SALT_FILE, 'rb') as f:
-            return f.read()
-    return None
         
 def offer_new_database():
     yes = ['y', 'yes']
@@ -74,9 +68,10 @@ def offer_new_database():
         new_database()
         
 def main_loop(db):
+    # TODO
     print('Please select the action you want to take:')
-    print('[1] Get my password')
-    print('[2] Add new entry')
+    print('[1] Get my password') # TODO: Show encrypted version too (as per Moodle)
+    print('[2] Add new entry') # TODO: Password Generation
     print('[3] Remove entry')
     exit(0)
 
@@ -89,8 +84,7 @@ if __name__ == '__main__':
             # NOTE: If there is salt but no db, salt is ignored for security
             new_database()
 
-        salt = get_salt()
-        if not salt:
+        if not os.path.exists(SALT_FILE):
             LOGGER.error(f'The salt file ({SALT_FILE}) has not been found. Please restore it or create a new database.')
             offer_new_database()
             exit(2) # NOTE: Actual Windows exit code for file not found
@@ -100,7 +94,7 @@ if __name__ == '__main__':
             if len(master_pwd) == 0:
                 offer_new_database()
                 exit(1)
-            db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, master_pwd, salt)
+            db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, master_pwd, SALT_FILE)
             if db:
                 break
             LOGGER.error('Wrong password, or the database has been tampered with. Restore a backup or create a new database.')

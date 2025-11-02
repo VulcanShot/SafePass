@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 class SymmetricCrypto(ABC):
-    '''Interface for symmetric cryptography providers'''
+    '''Interface for a symmetric cryptography provider'''
     def __init__(self, key):
         self.key = key
         super().__init__()
@@ -16,5 +16,5 @@ class SymmetricCrypto(ABC):
         pass
     
     @abstractmethod
-    def decrypt(self, blob):
+    def decrypt_to_str(self, blob):
         pass
