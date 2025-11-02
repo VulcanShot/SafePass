@@ -20,7 +20,7 @@ def test_new_database():
     assert res.fetchone() is not None
 
 def test_from_backup(db_file=ENCRYPTED_DB_FILE, _salt_file=SALT_FILE):
-    db = SqliteDatabase.from_backup(db_file, test_password, _salt_file)
+    db = SqliteDatabase.from_backup(db_file, _salt_file, test_password)
     assert db
     res = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Service'")
     assert res.fetchone() is not None

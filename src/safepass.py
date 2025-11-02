@@ -4,6 +4,7 @@ from getpass import getpass
 import mmap
 
 from SqliteDatabase import SqliteDatabase
+from EncryptedInMemDb import EncryptedInMemDb
 import SqlStatement
 
 ENCRYPTED_DB_FILE = os.path.join('db', 'safepass.db.enc')
@@ -33,7 +34,7 @@ def new_database():
     print('Encrypted database and salt file created. We recommend you to back them up.')
     main_loop(db)
 
-def get_new_master_password():
+def get_new_master_password() -> str:
     #NOTE: https://pages.nist.gov/800-63-4/sp800-63b/passwords/
     # Can't apply rate limiting because its a binary (easily bypassable)
     
@@ -67,7 +68,7 @@ def offer_new_database():
     if choice in yes:
         new_database()
         
-def main_loop(db):
+def main_loop(db: EncryptedInMemDb):
     # TODO
     print('Please select the action you want to take:')
     print('[1] Get my password') # TODO: Show encrypted version too (as per Moodle)
@@ -94,7 +95,7 @@ if __name__ == '__main__':
             if len(master_pwd) == 0:
                 offer_new_database()
                 exit(1)
-            db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, master_pwd, SALT_FILE)
+            db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, SALT_FILE, master_pwd)
             if db:
                 break
             LOGGER.error('Wrong password, or the database has been tampered with. Restore a backup or create a new database.')

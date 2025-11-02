@@ -8,7 +8,11 @@ import base64
 class FernetCrypto(SymmetricCrypto):
     '''Fernet cryptography'''
     @staticmethod
-    def from_pwd(pwd, salt = None):
+    def from_pwd(pwd: str, salt: bytes = None):
+        '''
+        Factory method. Runs `PBKDF2HMAC`, using the provided `pwd` as key material.
+        If no salt is passed, the generated salt is also returned as part of a tuple.
+        '''
         #NOTE: Explain why key derivation
         # Reference: https://cryptography.io/en/latest/fernet/#using-passwords-with-fernet
         
@@ -29,14 +33,14 @@ class FernetCrypto(SymmetricCrypto):
         fernet = Fernet(encoded_key)
         return FernetCrypto(fernet) if not is_salt_new else (FernetCrypto(fernet), salt)
     
-    def encrypt(self, input):
+    def encrypt(self, input: str | bytes) -> bytes:
         if isinstance(input, str):
             input = input.encode()
         elif not isinstance(input, bytes):
             raise ValueError
         return self.key.encrypt(input)
     
-    def decrypt_to_str(self, token):
+    def decrypt_to_str(self, token: bytes) -> str | None:
         '''
         Returns the decrypted plaintext, or None if there was an problem with the token.
         '''
