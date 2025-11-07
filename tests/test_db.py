@@ -1,7 +1,7 @@
 import pytest
 
 from SqliteDatabase import SqliteDatabase
-import SqlStatement
+import SqlStatements
 
 import os
 
@@ -14,9 +14,9 @@ TEST_SALT_FILE = os.path.join(DB_DIR, 'test.bin')
 test_password = 'pcs is the best first year module'
 
 def test_new_database():
-    (db, _) = SqliteDatabase.from_script(SqlStatement.CREATE_TABLES, test_password)
-    db.execute("INSERT INTO Service (Name, Domain) VALUES ('Netflix', NULL)")
-    res = db.execute("SELECT Name, Domain FROM Service")
+    (db, _) = SqliteDatabase.from_script(SqlStatements.CREATE_TABLES, test_password)
+    db.execute("INSERT INTO Service (Name, Url) VALUES ('Netflix', NULL)")
+    res = db.execute("SELECT Name, Url FROM Service")
     assert res.fetchone() is not None
 
 def test_from_backup(db_file=ENCRYPTED_DB_FILE, _salt_file=SALT_FILE):
@@ -26,7 +26,7 @@ def test_from_backup(db_file=ENCRYPTED_DB_FILE, _salt_file=SALT_FILE):
     assert res.fetchone() is not None
 
 def test_backup():
-    (db, salt) = SqliteDatabase.from_script(SqlStatement.CREATE_TABLES, test_password)
+    (db, salt) = SqliteDatabase.from_script(SqlStatements.CREATE_TABLES, test_password)
     
     with open(TEST_SALT_FILE, 'wb') as f:
         f.write(salt)

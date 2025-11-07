@@ -42,8 +42,8 @@ class SqliteDatabase(EncryptedInMemDb):
         db.execute_script(backup)
         return db
     
-    def execute(self, statement: str) -> sqlite3.Cursor:
-        cur = self.connection.cursor().execute(statement)
+    def execute(self, statement: str, params: dict = ()) -> sqlite3.Cursor:
+        cur = self.connection.cursor().execute(statement, params)
         return cur
         
     def execute_script(self, script: str) -> sqlite3.Cursor:
