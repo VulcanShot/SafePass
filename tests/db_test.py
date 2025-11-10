@@ -6,8 +6,13 @@ import SqlStatements
 import os
 
 DB_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'db')
-ENCRYPTED_DB_FILE = os.path.join(DB_DIR, 'safepass.db.enc')
-SALT_FILE = os.path.join(DB_DIR, 'salt.bin')
+
+GOOD_DB_FILE = os.path.join(DB_DIR, 'safepass.db.enc')
+GOOD_SALT_FILE = os.path.join(DB_DIR, 'salt.bin')
+
+BAD_DB_FILE = os.path.join(DB_DIR, 'safepass_corrupted.db.enc')
+BAD_SALT_FILE = os.path.join(DB_DIR, 'wrong_salt.bin')
+
 TEST_BACKUP_FILE = os.path.join(DB_DIR, 'test.db.enc')
 TEST_SALT_FILE = os.path.join(DB_DIR, 'test.bin')
 
@@ -19,7 +24,7 @@ def test_new_database():
     res = db.execute("SELECT Name, Url FROM Service")
     assert res.fetchone() is not None
 
-def test_from_backup(db_file=ENCRYPTED_DB_FILE, _salt_file=SALT_FILE):
+def test_from_backup(db_file=GOOD_DB_FILE, _salt_file=GOOD_SALT_FILE):
     db = SqliteDatabase.from_backup(db_file, _salt_file, test_password)
     assert db
     res = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Service'")
@@ -33,3 +38,11 @@ def test_backup():
     
     db.backup(TEST_BACKUP_FILE)
     test_from_backup(TEST_BACKUP_FILE, TEST_SALT_FILE)
+    
+def test_from_backup_corrupted_db():
+    db = SqliteDatabase.from_backup(BAD_DB_FILE, GOOD_SALT_FILE, test_password)
+    assert not db
+    
+def test_from_backup_bad_salt():
+    db = SqliteDatabase.from_backup(GOOD_DB_FILE, BAD_SALT_FILE, test_password)
+    assert not db

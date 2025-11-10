@@ -12,10 +12,18 @@ def random_string(length, seed):
 def random_input():
     return [ random_string(20, 67) for _ in range(5) ]
 
-def test_crypto(random_input):
+def test_bad_pwd(random_input):
     for input in random_input:
         (crypto, _) = FernetCrypto.from_pwd(input)
         enc = crypto.encrypt(input)
         dec = crypto.decrypt_to_str(enc)
         assert dec == input
+        
+def test_bad_pwd():
+    data = 'DATA'
+    (crypto, _) = FernetCrypto.from_pwd('A')
+    enc = crypto.encrypt(data)
+    (crypto, _) = FernetCrypto.from_pwd('B')
+    dec = crypto.decrypt_to_str(enc)
+    assert not dec
     
