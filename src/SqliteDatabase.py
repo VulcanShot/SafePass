@@ -5,16 +5,17 @@ import sqlite3
 class SqliteDatabase(EncryptedInMemDb):
     '''In-memory SQLite database'''
     
-    # NOTE: Not doing work in ctor because that shall not be!
+    # Not doing work in ctor because that shall not be!
     def __init__(self, connection, _crypto):
         self.connection = connection
         self.crypto = _crypto
         
     @staticmethod
     def _get_connection() -> sqlite3.Connection:
+        '''Meant for internal use to create the database in memory'''
         connection = sqlite3.connect(":memory:")
         connection.row_factory = sqlite3.Row
-        connection.autocommit = True #Note: Automatically creates transactions (https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.autocommit)
+        connection.autocommit = True # Automatically creates transactions (https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.autocommit)
         return connection
         
     @staticmethod
@@ -42,22 +43,34 @@ class SqliteDatabase(EncryptedInMemDb):
         db.execute_script(backup)
         return db
     
+    def change_master_pwd(self, backup_file: str, new_master_pwd: str) -> bytes:
+        (crypto, salt) = FernetCrypto.from_pwd(new_master_pwd)
+        self.crypto = crypto
+        self.backup(backup_file)
+        return salt
+    
     def execute(self, statement: str, params: dict = ()) -> sqlite3.Cursor:
-        cur = self.connection.cursor().execute(statement, params)
+        try:
+            cur = self.connection.cursor().execute(statement, params)
+        except sqlite3.IntegrityError():
+            cur = None
         return cur
         
     def execute_script(self, script: str) -> sqlite3.Cursor:
-        cur = self.connection.cursor().executescript(script)
+        try:
+            cur = self.connection.cursor().executescript(script)
+        except sqlite3.IntegrityError():
+            cur = None
         return cur
 
-    def backup(self, file: str) -> None:
+    def backup(self, filename: str) -> None:
         backup = ""
         for line in self.connection.iterdump():
             backup += '%s\n' % line
             
         token = self.crypto.encrypt(backup)
     
-        with open(file, 'wb') as f:
+        with open(filename, 'wb') as f:
             f.write(token)
 
     def close(self) -> None:

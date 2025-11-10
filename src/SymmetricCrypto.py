@@ -4,7 +4,6 @@ class SymmetricCrypto(ABC):
     '''Interface for a symmetric cryptography provider'''
     def __init__(self, key):
         self.key = key
-        super().__init__()
         
     @staticmethod
     @abstractmethod

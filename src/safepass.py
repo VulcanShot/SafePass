@@ -9,17 +9,13 @@ from EntryDto import EntryDto
 import SqlStatements
 from utils import *
 
-# TODO LIST
-# - key cycling (https://cryptography.io/en/latest/fernet/#cryptography.fernet.MultiFernet.rotate)
-# - pedir feedback para reporte
-
 ENCRYPTED_DB_FILE = os.path.join('db', 'safepass.db.enc')
-SALT_FILE = os.path.join('db', 'salt.bin')
+SALT_FILE = os.path.join('db', 'safepass.salt.bin')
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(
-    format=f'[{os.path.basename(__file__)}] (%(levelname)s) %(message)s',
-    level=logging.DEBUG
+    format=f'(%(levelname)s) %(message)s',
+    level=logging.INFO
 )
 
 def welcome_msg():
@@ -32,24 +28,23 @@ def new_database():
     write_binary(SALT_FILE, salt)
     db.backup(ENCRYPTED_DB_FILE)
     welcome_msg()
-    print('Encrypted database and salt file created. We recommend you to back them up.')
+    LOGGER.info('Encrypted database and salt file created. We recommend you to back them up.')
     main_loop(db)
 
 def get_new_master_password() -> str:
     # https://pages.nist.gov/800-63-4/sp800-63b/passwords/
-    # Can't apply rate limiting because its a binary (easily bypassable)
+    # Can't apply rate limiting because its a binary
     
     while True:
         master_pwd = getpass('Please create a master password: ') # Getpass instead of input
-        # TODO: Remove this in prod
-        # if len(master_pwd) < 15:
-        #     LOGGER.warning('Entered password must be at least 15 characters long')
-        #     continue
-        # with open(os.path.join('res', '100k-most-used-passwords-NCSC.txt'), 'rb') as file, \
-        #     mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s: # Explain why mmap (https://stackoverflow.com/a/4944929)
-        #     if s.find(master_pwd.encode()) != -1:
-        #         LOGGER.warning('Entered password has been breached before')
-        #         continue
+        if len(master_pwd) < 15:
+            LOGGER.warning('Entered password must be at least 15 characters long')
+            continue
+        with open(os.path.join('res', '100k-most-used-passwords-NCSC.txt'), 'rb') as file, \
+            mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s: # Explain why mmap (https://stackoverflow.com/a/4944929)
+            if s.find(master_pwd.encode()) != -1:
+                LOGGER.warning('Entered password has been breached before')
+                continue
         break
 
     while True:
@@ -65,10 +60,6 @@ def offer_new_database():
         new_database()
         
 def main_loop(db: SqliteDatabase):
-    # TODO
-    # db.execute("INSERT INTO Service (Name, url) VALUES ('Netflix', 'netflix.com')")
-    # db.execute("INSERT INTO Account (ServiceId, Username, Password) VALUES (1, 'xXPipidinoXx', 'asdAsdASD')")
-    
     while True:
         print('Please select the action you want to take:')
         print('[1] ' + underline_text('G') + 'et password')
@@ -81,35 +72,26 @@ def main_loop(db: SqliteDatabase):
         
         match opt:
             case '1' | 'G': get_password(db)
-            case '2' | 'N': insert_entry(db)
-            case '3' | 'R':
-                service = input('Enter the name of the service or its domain: ')
-                for row in db.execute(SqlStatements.DELETE_ENTRY, (service, service)):
-                    print(row)
-            case '4' | 'D':
-                pass
-            case '5' | 'C':
-                pass
-            case '6' | 'Q':
-                exit(0)
-            case _:
-                welcome_msg()
-                continue               
+            case '2' | 'N': insert_account(db)
+            case '3' | 'R': remove_account(db)
+            case '4' | 'D': dump_database(db)
+            case '5' | 'C': change_master_password(db)
+            case '6' | 'Q': exit(0)
+            case _: welcome_msg()   
+            
+        input('Press any key to continue...\n')
 
 def get_password(db: SqliteDatabase):
     service = input('Enter the name of the service or its domain: ')
+    empty_results = True
     for row in db.execute(SqlStatements.SELECT_ENTRY, (service, service)):
+        empty_results = False
         dto = EntryDto(row)
-        print(dto.service_name, end='')
-        if dto.url != '' and dto.url != None :
-            print(f' ({dto.url})')
-        else: print()
-        print('Username: ' + dto.username) # Did not print encrypted version too because I am encrypting whole db
-        print('Password: ' + dto.password)
-        print()
-        # TODO: If no account exist, output something
+        print(f'{dto}\n')
+    if empty_results:
+        LOGGER.info('No entries were found for %s\n', service)
 
-def insert_entry(db: SqliteDatabase):
+def insert_account(db: SqliteDatabase):
     entry = EntryDto()
     entry.service_name = input('Name of the service: ')
     service_exists = False
@@ -117,6 +99,7 @@ def insert_entry(db: SqliteDatabase):
         service_exists = True
     if not service_exists:
         entry.url = input('Domain of the service: ')
+        entry.url = None if entry.url == '' else entry.url
         db.execute(SqlStatements.INSERT_SERVICE, (entry.service_name, entry.url))
     entry.username = input('Username: ')
     entry.password = getpass('Password (leave empty to generate one): ')
@@ -126,9 +109,58 @@ def insert_entry(db: SqliteDatabase):
         entry.password = secrets.token_urlsafe(32) # Well beyond NIST recommendation. Intended to be copy-pasted, thus no need to be memorable.
         LOGGER.info('Generated password: %s', entry.password)
     
-    db.execute(SqlStatements.INSERT_ENTRY, (entry.service_name, entry.username, entry.password))
+    db.execute(SqlStatements.INSERT_ACCOUNT, (entry.service_name, entry.username, entry.password))
     db.backup(ENCRYPTED_DB_FILE)
     LOGGER.info(f'New entry created for {entry.service_name} succesfully.')
+
+def remove_account(db: SqliteDatabase):
+    accounts = []
+    service = input('Enter the name of the service or its domain: ')
+    
+    for row in db.execute(SqlStatements.SELECT_ENTRY, (service, service)):
+        accounts.append(EntryDto(row))
+        
+    if len(accounts) == 0:
+        LOGGER.info('No entries were found for %s.\n', service)
+        return
+    if len(accounts) == 1:
+        db.execute(SqlStatements.DELETE_ACCOUNT, (accounts[0].account_id,))
+        db.backup(ENCRYPTED_DB_FILE)
+        LOGGER.info('Account in %s removed.\n', service)
+        return
+    
+    for i, acc in enumerate(accounts, 1): # start=1 is more user friendly (?)
+        print(f'[{i}] {acc.username}')
+        
+    while True:
+        choice = input(f'Which account to delete? [1-{len(accounts)}] ')
+        try:
+            choice = int(choice)
+            if 1 <= choice <= len(accounts):
+                break
+        except ValueError:
+            continue
+        
+    choice_acc = accounts[choice - 1]
+    db.execute(SqlStatements.DELETE_ACCOUNT, (choice_acc.account_id,))
+    db.backup(ENCRYPTED_DB_FILE)
+    LOGGER.info('Account in %s under "%s" deleted.\n', service, choice_acc.username)
+    
+
+def dump_database(db: SqliteDatabase):
+    empty_results = True
+    for row in db.execute(SqlStatements.SELECT_ALL):
+        empty_results = False
+        dto = EntryDto(row)
+        print(f'{dto}\n')
+    if empty_results:
+        LOGGER.info('Database is empty\n')  
+
+def change_master_password(db: SqliteDatabase):
+    master_pwd = get_new_master_password()
+    salt = db.change_master_pwd(ENCRYPTED_DB_FILE, master_pwd)
+    write_binary(SALT_FILE, salt)
+    LOGGER.info('Master password changed, new database and salt files created. We recommend you to back them up.')
 
 def main():
     try:
@@ -149,8 +181,8 @@ def main():
             if len(master_pwd) == 0:
                 offer_new_database()
                 exit(1)
-            db = SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, SALT_FILE, master_pwd)
-            if db:
+            
+            if db := SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, SALT_FILE, master_pwd):
                 break
             LOGGER.error('Wrong password, or the database has been tampered with. Restore a backup or create a new database.')
                 

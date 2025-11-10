@@ -2,7 +2,7 @@ CREATE_TABLES = """\
 CREATE TABLE IF NOT EXISTS Service (
     ServiceId integer,
     Name text unique not null collate nocase,
-    Url text unique collate nocase,
+    Url text collate nocase,
     PRIMARY KEY (ServiceId)
 );
     
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS Account (
 """
 
 SELECT_ENTRY = """\
-SELECT s.Name as ServiceName, s.Url, a.Username, a.Password
+SELECT s.Name as ServiceName, s.Url, a.AccountId, a.Username, a.Password
 FROM Service s
 INNER JOIN Account a ON s.ServiceId = a.ServiceId
 WHERE s.Name = ?
@@ -30,11 +30,17 @@ FROM Service
 WHERE Name = ?    
 """
 
+SELECT_ALL = """\
+SELECT s.Name as ServiceName, s.Url, a.AccountId, a.Username, a.Password
+FROM Service s
+INNER JOIN Account a ON s.ServiceId = a.ServiceId
+"""
+
 INSERT_SERVICE = """\
 INSERT INTO Service(Name, Url) VALUES (?, ?)
 """
 
-INSERT_ENTRY = """\
+INSERT_ACCOUNT = """\
 INSERT INTO Account(ServiceId, Username, Password) VALUES (
     (SELECT ServiceId
     FROM Service
@@ -44,14 +50,7 @@ INSERT INTO Account(ServiceId, Username, Password) VALUES (
 )
 """
 
-DELETE_ENTRY = """\
+DELETE_ACCOUNT = """\
 DELETE FROM Account
-WHERE AccountId = (
-    SELECT a.AccountId
-    FROM Service s
-    INNER JOIN Account a ON s.ServiceId = a.ServiceId
-    WHERE s.Name = ?
-    OR s.Url = ?
-    LIMIT 1
-)
+WHERE AccountId = ?
 """
