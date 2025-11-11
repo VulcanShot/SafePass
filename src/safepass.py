@@ -9,8 +9,9 @@ from EntryDto import EntryDto
 import SqlStatements
 from utils import *
 
-ENCRYPTED_DB_FILE = os.path.join('db', 'safepass.db.enc')
-SALT_FILE = os.path.join('db', 'safepass.salt.bin')
+ENCRYPTED_DB_FILE = get_internal_file('db', 'safepass.db.enc')
+SALT_FILE = get_internal_file('db', 'safepass.salt.bin')
+BREACH_LIST_FILE = get_internal_file('res', '100k-most-used-passwords-NCSC.txt')
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(
@@ -40,7 +41,7 @@ def get_new_master_password() -> str:
         if len(master_pwd) < 15:
             LOGGER.warning('Entered password must be at least 15 characters long')
             continue
-        with open(os.path.join('res', '100k-most-used-passwords-NCSC.txt'), 'rb') as file, \
+        with open(BREACH_LIST_FILE, 'rb') as file, \
             mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s: # Explain why mmap (https://stackoverflow.com/a/4944929)
             if s.find(master_pwd.encode()) != -1:
                 LOGGER.warning('Entered password has been breached before')
@@ -94,9 +95,8 @@ def get_password(db: SqliteDatabase):
 def insert_account(db: SqliteDatabase):
     entry = EntryDto()
     entry.service_name = input('Name of the service: ')
-    service_exists = False
-    for _ in db.execute(SqlStatements.SELECT_SERVICE, (entry.service_name,)):
-        service_exists = True
+    res = db.execute(SqlStatements.CHECK_SERVICE_EXISTS, (entry.service_name,)).fetchone()
+    service_exists = res is not None
     if not service_exists:
         entry.url = input('Domain of the service: ')
         entry.url = None if entry.url == '' else entry.url
@@ -164,7 +164,6 @@ def change_master_password(db: SqliteDatabase):
 
 def main():
     try:
-        change_working_dir()
         welcome_msg()
         
         if not os.path.exists(ENCRYPTED_DB_FILE):

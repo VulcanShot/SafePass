@@ -4,10 +4,10 @@ import regex
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def change_working_dir():
+def get_internal_file(*path):
     abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname)
+    dir = os.path.dirname(abspath)
+    return os.path.join(dir, *path)
     
 def underline_text(txt):
     return "\033[4m" + str(txt) + "\033[0m"

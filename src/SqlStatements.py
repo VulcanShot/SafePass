@@ -24,7 +24,7 @@ WHERE s.Name = ?
 OR s.Url = ?
 """
 
-SELECT_SERVICE = """\
+CHECK_SERVICE_EXISTS = """\
 SELECT 1
 FROM Service
 WHERE Name = ?    
