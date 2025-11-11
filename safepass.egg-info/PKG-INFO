@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: safepass
+Version: 0.1.0
+Summary: CLI password manager
+Author-email: Piero Alvarez <Piero.Alvarez@warwick.ac.uk>
+Description-Content-Type: text/markdown
+Requires-Dist: cffi>=2.0.0
+Requires-Dist: colorama>=0.4.6
+Requires-Dist: cryptography>=46.0.3
+Requires-Dist: iniconfig>=2.3.0
+Requires-Dist: packaging>=25.0
+Requires-Dist: pluggy>=1.6.0
+Requires-Dist: pycparser>=2.23
+Requires-Dist: Pygments>=2.19.2
+Requires-Dist: pytest>=8.4.2
+Requires-Dist: regex>=2025.11.3
+
+# SafePass
+
+**SafePass** is a CLI password manager written in Python, designed for users who value simplicity, security, and full control over their data.
+
+## Key Features
+
+- Strong Encryption: Passwords are protected with PBKDF2-HMAC key derivation for secure, salted, and stretched encryption keys.
+
+- Local Storage: Your credentials are stored in a local encrypted database file, making it easy to back up or transfer without relying on cloud services.
+
+- Secure Password Generation: Automatically generates completely random, high-entropy passwords.
+
+- Lightweight CLI Interface: Manage, view, and generate passwords directly from your terminal with simple commands.
