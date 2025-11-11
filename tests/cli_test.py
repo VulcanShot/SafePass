@@ -1,4 +1,4 @@
-import sys, os
+import logging
 import test_utils
 
 import pytest
@@ -6,16 +6,16 @@ import pytest
 import safepass
 
 def test_get_new_master_password(monkeypatch, caplog):
-    input_sequence = [
+    inputs = [
         'tooshort',
         '111111111111111', # Fails breach check
         'aValidMasterPassword15', # Passes all checks
         'aValidMasterPassword15' # Confirmation
     ]
     
-    monkeypatch.setattr(safepass, 'getpass', test_utils.popper(input_sequence))
+    test_utils.mock_input(monkeypatch, safepass, inputs)
     
-    with caplog.at_level('WARNING'):
+    with caplog.at_level(logging.WARNING):
         result_pwd = safepass.get_new_master_password()
     
     assert result_pwd == 'aValidMasterPassword15'
@@ -41,7 +41,7 @@ def test_no_salt(monkeypatch):
         safepass.main()
 
 def test_empty_password(monkeypatch):
-    input_sequence = [
+    inputs = [
         '', # No password
         'yes', # Accept new database creation
     ]
@@ -49,8 +49,7 @@ def test_empty_password(monkeypatch):
     monkeypatch.setattr(safepass, 'ENCRYPTED_DB_FILE', test_utils.get_test_db_file(test_utils.GOOD_DB_FILE))
     monkeypatch.setattr(safepass, 'SALT_FILE', test_utils.get_test_db_file(test_utils.GOOD_SALT_FILE))
 
-    monkeypatch.setattr(safepass, 'getpass', test_utils.popper(input_sequence))
-    monkeypatch.setattr('builtins.input', test_utils.popper(input_sequence))
+    test_utils.mock_input(monkeypatch, safepass, inputs)
     monkeypatch.setattr(safepass, 'new_database', test_utils.raiser)
     
     with pytest.raises(RuntimeError, match=test_utils.RAISER_EXCEPTION):
