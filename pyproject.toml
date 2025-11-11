@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "safepass"
+authors = [
+    {name = "Piero Alvarez", email = "Piero.Alvarez@warwick.ac.uk"},
+]
+description = "CLI password manager"
+version = "0.1.0"
+readme = "README.md"
+dependencies = [
+    "cffi>=2.0.0",
+    "colorama>=0.4.6",
+    "cryptography>=46.0.3",
+    "iniconfig>=2.3.0",
+    "packaging>=25.0",
+    "pluggy>=1.6.0",
+    "pycparser>=2.23",
+    "Pygments>=2.19.2",
+    "regex>=2025.11.3"
+]
+
+[project.optional-dependencies]
+testing = [
+    "pytest>=8.4.2",
+]
+
+[project.scripts]
+safepass = "safepass.safepass:main"
