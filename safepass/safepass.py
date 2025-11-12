@@ -167,19 +167,19 @@ def main():
         welcome_msg()
         
         if not os.path.exists(ENCRYPTED_DB_FILE):
-            # If there is salt but no db, salt is ignored for security
+            LOGGER.debug('The database has not been found. Creating a new one.')
             new_database()
 
         if not os.path.exists(SALT_FILE):
-            LOGGER.error(f'The salt file ({SALT_FILE}) has not been found. Please restore it or create a new database.')
+            LOGGER.error(f'The salt file has not been found. Please restore it or create a new database.')
             offer_new_database()
-            exit(2) # Actual Windows exit code for file not found
+            exit(2) # Actual Windows/Linux/Mac exit code for file not found
             
         while True:
             master_pwd = getpass('Please enter your master password (leave empty to create new database): ')
             if len(master_pwd) == 0:
                 offer_new_database()
-                exit(1)
+                exit(0) # Exit Code Success because user chose to exit
             
             if db := SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, SALT_FILE, master_pwd):
                 break
@@ -187,7 +187,8 @@ def main():
                 
         main_loop(db)
     except KeyboardInterrupt:
-        pass
+        return 130
 
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main())
