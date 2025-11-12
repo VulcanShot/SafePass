@@ -22,4 +22,8 @@ $ pip install -e .
 
 ## Usage
 
-Safepass provides a convinient CLI, so just run `safepass`.
+Safepass provides a convinient CLI, so simply run:
+
+```
+$ safepass
+```
