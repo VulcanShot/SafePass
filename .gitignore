@@ -218,6 +218,7 @@ __marimo__/
 
 # Project
 safepass/db/
+tests/db/
 
 # Misc
 .gitconfig
