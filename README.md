@@ -36,7 +36,7 @@ python -m pip install -e .
 
 ## Usage
 
-Safepass provides a convinient CLI, so simply run:
+Safepass provides an interactive interface, so simply run:
 
 ```
 $ safepass
