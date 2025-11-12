@@ -217,7 +217,7 @@ __marimo__/
 
 
 # Project
-src/db
+safepass/db/
 
 # Misc
 .gitconfig
