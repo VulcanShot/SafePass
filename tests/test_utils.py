@@ -31,7 +31,9 @@ def mock_input(monkeypatch, obj, input_list):
     monkeypatch.setattr('builtins.input', popper(input_list))
     
 def new_mock_db(monkeypatch):
-    os.remove(TEST_DB_FILE)
-    os.remove(TEST_SALT_FILE)
+    if os.path.exists(TEST_DB_FILE):
+        os.remove(TEST_DB_FILE)
+    if os.path.exists(TEST_SALT_FILE):
+        os.remove(TEST_SALT_FILE)
     monkeypatch.setattr(safepass, 'ENCRYPTED_DB_FILE', get_test_db_file(TEST_DB_FILE))
     monkeypatch.setattr(safepass, 'SALT_FILE', get_test_db_file(TEST_SALT_FILE))
