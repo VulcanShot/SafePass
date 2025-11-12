@@ -26,6 +26,7 @@ def welcome_msg():
 def new_database():
     master_pwd = get_new_master_password()
     (db, salt) = SqliteDatabase.from_script(SqlStatements.CREATE_TABLES, master_pwd)
+    os.makedirs(get_internal_file('db'), exist_ok=True)
     write_binary(SALT_FILE, salt)
     db.backup(ENCRYPTED_DB_FILE)
     welcome_msg()
