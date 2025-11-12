@@ -38,14 +38,14 @@ class FernetCrypto(SymmetricCrypto):
             input = input.encode()
         elif not isinstance(input, bytes):
             raise ValueError
-        return self.key.encrypt(input)
+        return self._key.encrypt(input)
     
     def decrypt_to_str(self, token: bytes) -> str | None:
         '''
         Returns the decrypted plaintext, or None if there was an problem with the token.
         '''
         try:
-            blob = self.key.decrypt(token)
+            blob = self._key.decrypt(token)
             return blob.decode()
         except InvalidToken:
             return None

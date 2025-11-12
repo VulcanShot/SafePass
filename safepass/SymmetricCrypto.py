@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 class SymmetricCrypto(ABC):
     '''Interface for a symmetric cryptography provider'''
     def __init__(self, key):
-        self.key = key
+        self._key = key
         
     @staticmethod
     @abstractmethod

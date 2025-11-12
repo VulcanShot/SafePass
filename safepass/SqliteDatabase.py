@@ -7,7 +7,7 @@ class SqliteDatabase(EncryptedInMemDb):
     
     # Not doing work in ctor because that shall not be!
     def __init__(self, connection, _crypto):
-        self.connection = connection
+        self.__connection = connection
         self.crypto = _crypto
         
     @staticmethod
@@ -51,21 +51,21 @@ class SqliteDatabase(EncryptedInMemDb):
     
     def execute(self, statement: str, params: dict = ()) -> sqlite3.Cursor:
         try:
-            cur = self.connection.cursor().execute(statement, params)
+            cur = self.__connection.cursor().execute(statement, params)
         except sqlite3.IntegrityError():
             cur = None
         return cur
         
     def execute_script(self, script: str) -> sqlite3.Cursor:
         try:
-            cur = self.connection.cursor().executescript(script)
+            cur = self.__connection.cursor().executescript(script)
         except sqlite3.IntegrityError():
             cur = None
         return cur
 
     def backup(self, filename: str) -> None:
         backup = ""
-        for line in self.connection.iterdump():
+        for line in self.__connection.iterdump():
             backup += '%s\n' % line
             
         token = self.crypto.encrypt(backup)
@@ -74,4 +74,4 @@ class SqliteDatabase(EncryptedInMemDb):
             f.write(token)
 
     def close(self) -> None:
-        self.connection.close()
+        self.__connection.close()

@@ -8,10 +8,12 @@ class EncryptedInMemDb(ABC):
         pass
     
     @staticmethod
+    @abstractmethod
     def from_backup(backup_file: str, salt_file: str, master_pwd: str):
         pass
     
-    def change_master_pwd(self, backup_file: str, salt_file: str, master_pwd: str):
+    @abstractmethod
+    def change_master_pwd(self, backup_file: str, salt_file: str, master_pwd: str) -> bytes:
         pass
     
     @abstractmethod
@@ -23,9 +25,9 @@ class EncryptedInMemDb(ABC):
         pass
     
     @abstractmethod
-    def backup(self, filename: str):
+    def backup(self, filename: str) -> None:
         pass
 
     @abstractmethod
-    def close(self):
+    def close(self) -> None:
         pass
