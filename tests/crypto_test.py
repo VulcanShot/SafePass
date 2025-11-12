@@ -1,5 +1,5 @@
 import pytest
-from FernetCrypto import FernetCrypto
+from safepass.FernetCrypto import FernetCrypto
 import random
 import string
 

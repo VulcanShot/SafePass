@@ -1,7 +1,7 @@
 import test_utils
 
-import SqlStatements
-from SqliteDatabase import SqliteDatabase
+from safepass import SqlStatements
+from safepass.SqliteDatabase import SqliteDatabase
 
 def test_new_database():
     (db, _) = SqliteDatabase.from_script(SqlStatements.CREATE_TABLES, test_utils.TEST_PASSWORD)

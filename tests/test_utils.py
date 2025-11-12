@@ -1,5 +1,5 @@
 import os
-import safepass
+import safepass.safepass as safepass
 
 def get_test_db_file(name):
     abspath = os.path.abspath(__file__)

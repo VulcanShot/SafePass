@@ -1,4 +1,4 @@
-import safepass
+import safepass.safepass as safepass
 import test_utils
 import pytest
 import logging

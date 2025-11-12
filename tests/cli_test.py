@@ -3,7 +3,7 @@ import test_utils
 
 import pytest
 
-import safepass
+import safepass.safepass as safepass
 
 def test_get_new_master_password(monkeypatch, caplog):
     inputs = [
