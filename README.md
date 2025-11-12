@@ -14,10 +14,24 @@
 
 ## Installation
 
+The installation methods for each OS are provided below. Note that creating virtual environments is not mandatory.
+
+On Windows:
+```powershell
+git clone https://git-lab.cyber.warwick.ac.uk/p4cs/SafePass.git
+cd SafePass
+python -m venv ./venv
+.\venv\Scripts\activate
+python -m pip install -e .
 ```
-$ git clone https://git-lab.cyber.warwick.ac.uk/p4cs/SafePass.git
-$ cd SafePass
-$ pip install -e .
+
+On Linux/MacOS:
+```bash
+git clone https://git-lab.cyber.warwick.ac.uk/p4cs/SafePass.git
+cd SafePass
+python3 -m venv ./venv
+source ./venv/bin/activate
+python -m pip install -e .
 ```
 
 ## Usage
