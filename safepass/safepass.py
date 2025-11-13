@@ -96,11 +96,14 @@ def get_password(db: SqliteDatabase):
 def insert_account(db: SqliteDatabase):
     entry = EntryDto()
     entry.service_name = input('Name of the service: ')
+    if entry.service_name.strip() == '':
+        LOGGER.warning('Service name cannot be empty')
+        return
     res = db.execute(SqlStatements.CHECK_SERVICE_EXISTS, (entry.service_name,)).fetchone()
     service_exists = res is not None
     if not service_exists:
         entry.url = input('Domain of the service: ')
-        entry.url = None if entry.url == '' else entry.url
+        entry.url = None if entry.url.strip() == '' else entry.url
         db.execute(SqlStatements.INSERT_SERVICE, (entry.service_name, entry.url))
     entry.username = input('Username: ')
     entry.password = getpass('Password (leave empty to generate one): ')
