@@ -104,7 +104,9 @@ def insert_account(db: SqliteDatabase):
         db.execute(SqlStatements.INSERT_SERVICE, (entry.service_name, entry.url))
     entry.username = input('Username: ')
     entry.password = getpass('Password (leave empty to generate one): ')
-    remove_control_chars(entry.password) # Control chars cannot be used in passwords
+    # Control chars cannot be used in passwords or usernames
+    remove_control_chars(entry.username)
+    remove_control_chars(entry.password)
     
     if entry.password == '' and yes_no_question('Generate password? [Y/N]'):
         entry.password = secrets.token_urlsafe(32) # Well beyond NIST recommendation. Intended to be copy-pasted, thus no need to be memorable.
@@ -188,7 +190,7 @@ def main():
                 
         main_loop(db)
     except KeyboardInterrupt:
-        return 130
+        return 130 # Return code for interrupt
 
 if __name__ == '__main__':
     import sys
