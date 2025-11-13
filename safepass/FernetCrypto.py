@@ -25,7 +25,7 @@ class FernetCrypto(SymmetricCrypto):
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
-            iterations=1_200_000, #NOTE: Django recommendation
+            iterations=1_500_000, #NOTE: Django recommendation
         )
         
         key = kdf.derive(bytes(pwd, 'utf-8'))
