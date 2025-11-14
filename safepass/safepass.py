@@ -190,7 +190,8 @@ def main():
             if db := SqliteDatabase.from_backup(ENCRYPTED_DB_FILE, SALT_FILE, master_pwd):
                 break
             LOGGER.error('Wrong password, or the database has been tampered with. Restore a backup or create a new database.')
-                
+        
+        welcome_msg()     
         main_loop(db)
     except KeyboardInterrupt:
         return 130 # Return code for interrupt
