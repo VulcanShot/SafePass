@@ -45,7 +45,6 @@ def test_workflow(monkeypatch, caplog):
         
     assert 'Account in Moodle removed.' in caplog.text
     
-
 def test_master_pwd_change(monkeypatch, caplog):
     new_master_pwd = 'My new master passphrase is this'
     input_pwd_change = [
