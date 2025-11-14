@@ -70,7 +70,7 @@ def main_loop(db: SqliteDatabase):
         print('[4] ' + underline_text('D') + 'ump all passwords')
         print('[5] ' + underline_text('C') + 'hange master password')
         print('[6] ' + underline_text('Q') + 'uit')
-        opt = input(':').upper() # NOTE: LESS-style, felt that it gives some ui feedback
+        opt = input(':').upper()
         
         match opt:
             case '1' | 'G': get_password(db)

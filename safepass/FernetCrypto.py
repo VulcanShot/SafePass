@@ -13,14 +13,13 @@ class FernetCrypto(SymmetricCrypto):
         Factory method. Runs `PBKDF2HMAC`, using the provided `pwd` as key material.
         If no salt is passed, the generated salt is also returned as part of a tuple.
         '''
-        #NOTE: Explain why key derivation
-        # Reference: https://cryptography.io/en/latest/fernet/#using-passwords-with-fernet
         
         is_salt_new = False
         if salt is None:
             salt = os.urandom(16)
             is_salt_new = True
             
+        # Reference: https://cryptography.io/en/latest/fernet/#using-passwords-with-fernet
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,

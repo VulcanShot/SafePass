@@ -5,7 +5,7 @@ import pytest
 
 import safepass.safepass as safepass
 
-def test_get_new_master_password(monkeypatch, caplog):
+def test_master_password(monkeypatch, caplog):
     inputs = [
         'tooshort',
         '111111111111111', # Fails breach check
@@ -50,7 +50,7 @@ def test_empty_password(monkeypatch):
     monkeypatch.setattr(safepass, 'SALT_FILE', test_utils.get_test_db_file(test_utils.GOOD_SALT_FILE))
 
     test_utils.mock_input(monkeypatch, safepass, inputs)
-    monkeypatch.setattr(safepass, 'new_database', test_utils.raiser)
+    monkeypatch.setattr(safepass, 'new_database', test_utils.raiser) # beyond the scope of this test
     
     with pytest.raises(RuntimeError, match=test_utils.RAISER_EXCEPTION):
         safepass.main()
