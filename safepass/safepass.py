@@ -150,7 +150,7 @@ def remove_account(db: SqliteDatabase):
     choice_acc = accounts[choice - 1]
     db.execute(SqlStatements.DELETE_ACCOUNT, (choice_acc.account_id,))
     db.backup(ENCRYPTED_DB_FILE)
-    LOGGER.info('Account in %s under "%s" deleted.\n', service, choice_acc.username)
+    LOGGER.info('Account in %s under "%s" removed.\n', service, choice_acc.username)
     
 
 def dump_database(db: SqliteDatabase):

@@ -26,11 +26,25 @@ def test_workflow(monkeypatch, caplog):
     assert caplog.text.count('New entry created for') == 2
     # Entry Removal
     assert 'Account in Moodle removed' not in caplog.text
-    assert 'Account in Moodle under "TestUser" deleted' in caplog.text
+    assert 'Account in Moodle under "TestUser" removed' in caplog.text
     # Entry Retrieval / Dump
     assert 'No entries were found for' not in caplog.text
     # Exiting
     assert exit.value.code == 0
+    
+    inputs = [
+        test_utils.TEST_PASSWORD,
+        'r', 'Moodle', ' ',
+        '6'
+    ]
+    
+    test_utils.mock_input(monkeypatch, safepass, inputs)
+    
+    with caplog.at_level(logging.INFO), pytest.raises(SystemExit) as exit:
+        safepass.main()
+        
+    assert 'Account in Moodle removed.' in caplog.text
+    
 
 def test_master_pwd_change(monkeypatch, caplog):
     new_master_pwd = 'My new master passphrase is this'
