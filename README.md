@@ -2,6 +2,8 @@
 
 **SafePass** is a CLI password manager written in Python, designed for users who value simplicity, security, and full control over their data.
 
+Created for submission as coursework of _WM187 - Programming for CyberSec_. Imported from GitLab.
+
 ## Key Features
 
 - **Strong Encryption**: PBKDF2-HMAC key derivation for secure, salted, and stretched encryption keys.
@@ -39,5 +41,5 @@ python -m pip install -e .
 Safepass provides an interactive interface, so simply run:
 
 ```
-$ safepass
+$ (venv) safepass
 ```
